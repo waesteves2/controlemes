@@ -80,40 +80,29 @@
   </style>
   <script>
     window.onload = function() {
-      var nomeItem = localStorage.getItem('nomeItem');
-      var valorTotal = localStorage.getItem('valorTotal');
-      var numParcelas = localStorage.getItem('numParcelas');
+      var items = JSON.parse(localStorage.getItem('items'));
 
-      if (nomeItem) {
-        document.getElementById('nomeItem').value = nomeItem;
+      if (items && items.length > 0) {
+        for (var i = 0; i < items.length; i++) {
+          var item = items[i];
+          adicionarItemNaTabela(item.nomeItem, item.valorTotal, item.numParcelas);
+        }
       }
-      if (valorTotal) {
-        document.getElementById('valorTotal').value = valorTotal;
-      }
-      if (numParcelas) {
-        document.getElementById('numParcelas').value = numParcelas;
-      }
-
-      calcularParcelas();
     };
 
-    function calcularParcelas() {
-      var nomeItem = document.getElementById('nomeItem').value;
-      var valorTotal = parseFloat(document.getElementById('valorTotal').value);
-      var numParcelas = parseInt(document.getElementById('numParcelas').value);
-      var valorParcela = valorTotal / numParcelas;
-
+    function adicionarItemNaTabela(nomeItem, valorTotal, numParcelas) {
       var tabelaParcelas = document.getElementById('tabelaParcelas');
-      tabelaParcelas.innerHTML = '';
+      var newRow = tabelaParcelas.insertRow();
+      var cellNome = newRow.insertCell(0);
+      var cellMes = newRow.insertCell(1);
+      var cellValor = newRow.insertCell(2);
 
-      for (var i = 1; i <= numParcelas; i++) {
-        var newRow = tabelaParcelas.insertRow();
-        var cellNome = newRow.insertCell(0);
-        var cellMes = newRow.insertCell(1);
-        var cellValor = newRow.insertCell(2);
+      var mesAtual = new Date().getMonth() + 1;
+      var anoAtual = new Date().getFullYear();
 
-        var mes = new Date().getMonth() + i;
-        var ano = new Date().getFullYear();
+      for (var i = 0; i < numParcelas; i++) {
+        var mes = mesAtual + i;
+        var ano = anoAtual;
         if (mes > 12) {
           mes -= 12;
           ano++;
@@ -121,24 +110,44 @@
 
         cellNome.innerHTML = nomeItem;
         cellMes.innerHTML = mes + '/' + ano;
-        cellValor.innerHTML = 'R$ ' + valorParcela.toFixed(2);
-      }
+        cellValor.innerHTML = 'R$ ' + (valorTotal / numParcelas).toFixed(2);
 
-      localStorage.setItem('nomeItem', nomeItem);
-      localStorage.setItem('valorTotal', valorTotal);
-      localStorage.setItem('numParcelas', numParcelas);
+        newRow = tabelaParcelas.insertRow();
+        cellNome = newRow.insertCell(0);
+        cellMes = newRow.insertCell(1);
+        cellValor = newRow.insertCell(2);
+      }
+    }
+
+    function calcularParcelas() {
+      var nomeItem = document.getElementById('nomeItem').value;
+      var valorTotal = parseFloat(document.getElementById('valorTotal').value);
+      var numParcelas = parseInt(document.getElementById('numParcelas').value);
+
+      adicionarItemNaTabela(nomeItem, valorTotal, numParcelas);
+      salvarDados(nomeItem, valorTotal, numParcelas);
+    }
+
+    function salvarDados(nomeItem, valorTotal, numParcelas) {
+      var item = {
+        nomeItem: nomeItem,
+        valorTotal: valorTotal,
+        numParcelas: numParcelas
+      };
+
+      var items = JSON.parse(localStorage.getItem('items')) || [];
+      items.push(item);
+      localStorage.setItem('items', JSON.stringify(items));
     }
 
     function limparDados() {
-      localStorage.removeItem('nomeItem');
-      localStorage.removeItem('valorTotal');
-      localStorage.removeItem('numParcelas');
+      localStorage.removeItem('items');
       document.getElementById('nomeItem').value = '';
       document.getElementById('valorTotal').value = '';
       document.getElementById('numParcelas').value = '';
       document.getElementById('tabelaParcelas').innerHTML = '';
-}
-</script>
+    }
+  </script>
 </head>
 <body>
   <div class="container">
